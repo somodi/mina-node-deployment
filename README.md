@@ -28,8 +28,8 @@ e.g.:
     my_secret_key = "<MY_SECRET_KEY>"
 ```
 
-Add an EC2 key to your aws account, download it, and put it (or symlink it) in ansible/secrets/aws.pem
+Add an EC2 key to your aws account, download it, and put it (or symlink it) in `ansible/secrets/aws.pem`
 
-Run `make up`
+Run `make init` to initialize terraform. then `make up` to run terraform and ansible recipes.
 
 Refer to [the mina documentation](https://docs.minaprotocol.com/en/using-mina/connecting) for more information.
