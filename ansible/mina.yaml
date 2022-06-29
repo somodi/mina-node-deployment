@@ -1,0 +1,92 @@
+- hosts: all
+
+  vars_prompt:  
+    - name: 'private_key_password'
+      prompt: 'password for encryption of node private key'
+      private: true
+
+  tasks:  
+
+  - block:
+      - name: Add Mina repository
+        apt_repository: 
+          repo: 'deb [trusted=yes] http://packages.o1test.net {{ ansible_distribution_release }} stable'
+          filename: mina
+        
+      - name: Install dependencies
+        apt: 
+          name: 
+            - curl 
+            - unzip
+          state: present
+          update_cache: yes
+
+      - name: Install Mina packages
+        apt: 
+          name: 
+            - mina-mainnet=1.3.0-9b0369c
+            - mina-generate-keypair=1.3.0-9b0369c
+          state: present
+          update_cache: yes
+
+    become: true
+
+
+  - block:
+      - name: Check that mina was installed correctly
+        shell:
+          cmd: mina version
+        register: mina_version
+        changed_when: false
+
+      - name: Print our the mina version
+        debug:
+          var: mina_version
+
+      - name: Create keys directory 
+        file:
+          path: '~/keys'
+          state: directory
+          mode: '0700'
+
+      - name: Generate key pair
+        shell:
+          cmd: |
+            mina-generate-keypair --privkey-path ~/keys/my-wallet
+          creates: ~/keys/my-wallet
+        environment: 
+          MINA_PRIVKEY_PASS: '{{ private_key_password }}'
+
+      - name: Protect private key
+        file:
+          path: '~/keys/my-wallet'
+          mode: '0600'
+
+      - name: Configure .mina-env
+        template:   
+          src: files/.mina-env.j2
+          dest: '~/.mina-env'
+        with_items: '{{ private_key_password }}'
+        no_log: true
+
+      - name: Systemd daemon-reload for user
+        systemd:
+          daemon_reload: yes
+          scope: user
+
+      - name: Start and enable mina node service
+        systemd:
+          name: mina
+          state: started
+          enabled: yes
+          scope: user
+
+      - name: Check if lingering is enable
+        stat: 
+          path: /var/lib/systemd/linger/{{ ansible_user }}
+        register: linger
+
+      - name: Enable linger for {{ ansible_user }}
+        command: 
+          cmd: loginctl enable-linger {{ ansible_user }}
+        when: not linger.stat.exists
