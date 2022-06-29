@@ -33,3 +33,9 @@ Add an EC2 key to your aws account, download it, and put it (or symlink it) in a
 Run `make up`
 
 Refer to [the mina documentation](https://docs.minaprotocol.com/en/using-mina/connecting) for more information.
+
+## Local Nix development environment
+
+The folder `nixos-docker-env` contains a first attempt to pack and deploy Mina in NixOS
+It was done using this debian package: 
+`https://packages.o1test.net/pool/focal/m/mi/mina-mainnet_1.3.1beta1-master-3e3abec.deb`

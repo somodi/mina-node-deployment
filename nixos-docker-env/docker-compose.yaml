@@ -1,0 +1,13 @@
+version: "3.7"
+services:
+  nixos:
+    build: 
+      context: .
+      target: latest
+    image: nixos_local:latest
+    # Local folder mounted. Useful for development
+    volumes:
+      - ./shared:/shared
+    # command: nix-build --show-trace /shared/default.nix
+    # command: /root/.nix-profile/bin/bash
+    # command: /nix/store/*bash*/bin/bash
